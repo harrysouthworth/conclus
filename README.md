@@ -1,4 +1,4 @@
-== Consensus Clustering in R ==
+= Consensus Clustering in R =
 
 This is the consensus clustering approach of Monti, Tamayo,
 Mesirov and Golub. This implementation is intended to allow
