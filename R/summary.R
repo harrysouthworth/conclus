@@ -8,8 +8,8 @@ cdf.conclus <- function(x){
 
   for (i in 1:length(x$M)){
     M <- c(x$M[[i]][ii])
-    #M <- M[M > 0]
-    cc <- sort(M)
+
+    cc <- sort(unique(M))
 
     cdf <- sapply(cc, function(X) sum(M <= X)) / btm
 
@@ -26,6 +26,20 @@ cdf.conclus <- function(x){
   res
 }
 
+
+#' Compute and return summaries of a 'conclus' object.
+#' @param object An object of class 'conclus'.
+#' @param ... Not used.
+#' @details The function computes the distribution function of the elements of the
+#'   consensus matrices returned by the call to \code{conclus}. From these, it
+#'   then returns the ares under the curves, and the changes in those areass as
+#'   the number of clusters k is incremented. It also computes the 'cluster consensus'
+#'   which enables the user to see which of the clusters identified are the most
+#'   stable. These statistics are intended to aid the user in selecting how many
+#'   clusters they might reasonably believe to exist. They should be used in
+#'   conjunction with the plot of the consensus matrices, generated via
+#'   \code{ggplot(objec t)}, for the object that is passed to the \code{summary}
+#'   function.
 #' @export
 summary.conclus <- function(object, ...){
   cdf <- cdf.conclus(object)
@@ -44,8 +58,12 @@ auc.conclus <- function(x){
 
   for (i in 1:length(auc)){
     d <- x[x$k == i + 1, ]
-    w <- diff(d$index)
-    auc[i] <- sum(w * d$CDF[-1])
+    xx <- d$index
+    yy <- d$CDF
+
+    index <- 2:length(xx)
+
+    auc[i] <- (xx[index] - xx[index - 1]) %*% (yy[index] + yy[index - 1]) / 2
   }
 
   auc
@@ -62,7 +80,7 @@ delta.conclus <- function(auc){
   delta
 }
 
-
+#' @method plot summary.conclus
 #' @export
 plot.summary.conclus <- function(x, ...){
   auc <- x$AUC
@@ -75,6 +93,7 @@ plot.summary.conclus <- function(x, ...){
   invisible()
 }
 
+#' @method print conclus
 #' @export
 print.conclus <- function(x, digits=3, ...){
   print(x$call)
@@ -86,6 +105,7 @@ print.conclus <- function(x, digits=3, ...){
   invisible()
 }
 
+#' @method print summary.conclus
 #' @export
 print.summary.conclus <- function(x, digits=3, ...){
   print(x$call)
@@ -99,6 +119,7 @@ print.summary.conclus <- function(x, digits=3, ...){
   invisible()
 }
 
+#' @method ggplot summary.conclus
 #' @export
 ggplot.summary.conclus <- function(data, mapping=NULL, legend.position="bottom", ..., environment){
   delta <- data$Delta
