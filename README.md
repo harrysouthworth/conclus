@@ -6,7 +6,7 @@ the user to use their own favourite clustering functions as
 the 'base learner' and to have an interface that most R
 users would find intuitive.
 
-AstraZeneca is partially funding this work.
+**AstraZeneca** is partially funding this work.
 
 
 ## References ##

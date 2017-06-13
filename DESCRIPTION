@@ -1,0 +1,15 @@
+Package: conclus
+Type: Package
+Title: Consensus Clustering
+Version: 0.1
+Date: 2017-0-13
+Author: Harry Southworth
+Maintainer: Harry Southworth <harry@dataclarityconsulting.co.uk>
+Description: Consensus clustering with support for user-specified clustering
+    algorithms.
+License: GPL-2
+Depends:
+    cluster,
+    ggplot2
+RoxygenNote: 6.0.1
+LazyLoad: yes

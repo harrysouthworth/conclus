@@ -77,7 +77,11 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 
   res <- rep(0, length.out=nrow(diss))
   names(res) <- rownames(diss)
-  i <- sample(rownames(diss), size=round(subsample * nrow(diss)))
+  if (subsample < 1){ # subsampling
+    i <- sample(rownames(diss), size=round(subsample * nrow(diss)))
+  } else if (subsample == 1){ # bootstrap sampling
+    i <- sample(rownames(diss), size=nrow(diss), replace=TRUE)
+  }
 
   res[i] <- cluster(as.dist(diss[i, i]), k=k)
 
@@ -88,14 +92,15 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 
 #' Perform consensus clustering
 #' @param diss A dissimilarity matris as returned by, for example, \code{dist}
-#'   or \code{daisy}. It will be immediately turned into a matrix via \code{as.matrix}.
+#'   or \code{daisy}.
 #' @param cluster A clustering function that takes 2 arguments: \code{x} and \code{k}
 #'   and returns only the class memberships. Functions \code{pamCons} and \code{hclustCons}
 #'   are two simple examples. The dissimilarity matrix \code{diss} will be passed
 #'   into \code{cluster} so \code{cluster} should NOT coerce \code{x} to be a
 #'   dissimilarity matrix.
 #' @param subsample The subsampling proportion. Defaults to \code{subsample=0.5}
-#'   and 50\% subsampling is performed.
+#'   and 50\% subsampling is performed. If \code{subsample == 1}, bootstrap
+#'   sampling (sampling with replacement) is performed.
 #' @param K The maximum number of clusters to identify. All values between 2
 #'   and \code{K} are used and the consensus clustering matrix returned for
 #'   each.
@@ -105,6 +110,21 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #'   is often the case that \code{conclus} will run faster on a single core than
 #'   when it makes the effort to parallelize. To have the function guess the
 #'   number of cores, specify \code{ncores=NULL}.
+#' @details R random subsamples (or bootstrap samples if \code{subsample = 1}) are
+#'   taken from the dissimilarity matrix, and clustering is performed for each value
+#'   of k = 2, ..., K. For each value of k, the consensus matrix is computed; each
+#'   entry (i, j) represents the average number of times items i and j were in the same
+#'   cluster. As such, each element of M is on [0, 1], with 0 or 1 representing perfect
+#'   consensus. If items of the concensus matrix are arranged according to cluster
+#'   membership, perfect consensus would be represented by a block diagonal form with
+#'   blocks full of 1s surrounded by 0s.
+#' @return An object of class `conclus'. It contains:
+#'   \item{call}{the function call;}
+#'   \item{M}{a list, with one element for each k in 2:K, representing the consensus matrices;}
+#'   \item{membership}{a matrix with one column, for each k in 2:K, representing the cluster memberships;}
+#'   \item{K}{the values of k in 2:K;}
+#'   \item{cluster}{the function used to perform the clustering on the subsamples.}
+#' @author Harry Southworth
 #' @export conclus
 conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=FALSE,
                     ncores=1){
@@ -152,11 +172,12 @@ conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=
   colnames(membership) <- paste0("k=", 2:K)
   rownames(membership) <- rownames(diss)
 
-  out <- list(M=out, membership=membership, K=2:K, cluster=cluster, call=theCall)
+  out <- list(call=theCall, M=out, membership=membership, K=2:K, cluster=cluster)
   class(out) <- "conclus"
   out
 }
 
+#' @method ggplot conclus
 #' @export
 ggplot.conclus <- function(data, mapping, low="white", high="blue", legend.position="none", ..., environment){
   lvls <- paste0("k=", 2:max(data$K))
