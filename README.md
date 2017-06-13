@@ -8,3 +8,10 @@ users would find intuitive.
 
 AstraZeneca is partially funding this work.
 
+
+## References ##
+S. Monti, P. Tamayo, J. Mesirove and T. Golub, _Consensus
+clustering: a resampling-based method for class discovery
+and visualization of gene expression microarray data_,
+Machine Learning, 52, 91 -- 118, 2003
+
