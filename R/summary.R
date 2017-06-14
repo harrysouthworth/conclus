@@ -149,7 +149,7 @@ ggplot.summary.conclus <- function(data, mapping=NULL, legend.position="bottom",
     geom_line(color="blue", size=1.5) +
     scale_x_continuous("Number of clusters") +
     scale_y_continuous("Value") +
-    facet_wrap(~ what, scales="free_y", labeller=label_parsed)
+    facet_wrap(~ what, scales="free_y", labeller=label_parsed, ncol=1)
 
   grid.arrange(cdfplot, aucplot, ncol=2)
 
