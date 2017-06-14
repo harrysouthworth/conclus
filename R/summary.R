@@ -32,8 +32,8 @@ cdf.conclus <- function(x){
 #' @param ... Not used.
 #' @details The function computes the distribution function of the elements of the
 #'   consensus matrices returned by the call to \code{conclus}. From these, it
-#'   then returns the ares under the curves, and the changes in those areass as
-#'   the number of clusters k is incremented. It also computes the 'cluster consensus'
+#'   then returns the ares under the curves, and the incremental proportional changes to those areas as
+#'   the number of clusters k is increeased. It also computes the 'cluster consensus'
 #'   which enables the user to see which of the clusters identified are the most
 #'   stable. These statistics are intended to aid the user in selecting how many
 #'   clusters they might reasonably believe to exist. They should be used in
@@ -110,9 +110,9 @@ print.conclus <- function(x, digits=3, ...){
 print.summary.conclus <- function(x, digits=3, ...){
   print(x$call)
   cat("\nAUC\n")
-  print(x$AUC, digits=digits)
+  cat(round(x$AUC, digits=digits))
   cat("\nDelta\n")
-  print(x$Delta, digits=digits)
+  cat(round(x$Delta, digits=digits))
   cat("\nCluster consensus\n")
   con <- format(x$Consensus, zero.print=FALSE, digits=digits)
   print(noquote(con))
@@ -122,6 +122,7 @@ print.summary.conclus <- function(x, digits=3, ...){
 #' @method ggplot summary.conclus
 #' @export
 ggplot.summary.conclus <- function(data, mapping=NULL, legend.position="bottom", ..., environment){
+  auc <- data$AUC
   delta <- data$Delta
   data <- data$CDF
 
@@ -136,14 +137,19 @@ ggplot.summary.conclus <- function(data, mapping=NULL, legend.position="bottom",
     scale_x_continuous("Consensus index", limits=c(0, 1)) +
     scale_y_continuous("CDF", limits=c(0, 1))
 
-  delta <- data.frame(k=2:(length(lvls) + 1), delta=delta)
+  k <- rep(2:(length(lvls) + 1), 2)
+  value <- c(auc, delta)
+  what <- rep(c("AUC", "Delta(k)"), each=length(lvls))
+
+  auc <- data.frame(k=k, value=value, what=what)
 
   aucplot <-
-  ggplot(delta, aes(k, delta)) +
+  ggplot(auc, aes(k, value)) +
     geom_point(size=3, color="blue") +
     geom_line(color="blue", size=1.5) +
     scale_x_continuous("Number of clusters") +
-    scale_y_continuous(expression(Delta(AUC)))
+    scale_y_continuous("Value") +
+    facet_wrap(~ what, scales="free_y", labeller=label_parsed)
 
   grid.arrange(cdfplot, aucplot, ncol=2)
 
