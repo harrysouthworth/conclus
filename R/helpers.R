@@ -65,6 +65,7 @@ rscale <- function(x, na.rm=TRUE){
 #'   and \code{convergence} which is the convergence code returned by \code{stats::optim}.
 #' @details The function trims the data as instructed then uses \code{stats::optim}
 #'   to find the Box-Cox parameters that minimize the squared skewness.
+#' @export
 deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05){
   if (na.rm){
     x <- x[!is.na(x)]
@@ -83,11 +84,20 @@ deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05){
   }
 
   fun <- function(par, x){
+    if (any(x + par[2] < 0)){
+      10^6
+    }
     x <- trans(par, x)
-    rskew(x)^2
+    res <- rskew(x)^2
+    if (is.na(res)){
+      10^6
+    } else {
+      res
+    }
   }
 
-  res <- optim(par=c(a=0, b=min(0, min(x))), fn=fun, x=x)
+  res <- optim(par=c(a=0, b= -min(x) + 1), fn=fun, x=x, method="L-BFGS-B",
+               lower=c(-Inf, -min(x) + 1))
 
   out <- trans(res$par, x)
   attr(out, "par") <- res$par

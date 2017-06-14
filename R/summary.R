@@ -109,10 +109,12 @@ print.conclus <- function(x, digits=3, ...){
 #' @export
 print.summary.conclus <- function(x, digits=3, ...){
   print(x$call)
-  cat("\nAUC\n")
-  cat(round(x$AUC, digits=digits))
-  cat("\nDelta\n")
-  cat(round(x$Delta, digits=digits))
+
+  dd <- matrix(round(c(x$AUC, x$Delta), digits=digits), nrow=2, byrow=TRUE)
+  rownames(dd) <- c("AUC", "Delta")
+  colnames(dd) <- colnames(x$Consensus)
+  cat("\nAUC & Delta\n")
+  print(dd)
   cat("\nCluster consensus\n")
   con <- format(x$Consensus, zero.print=FALSE, digits=digits)
   print(noquote(con))

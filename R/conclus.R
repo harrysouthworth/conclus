@@ -126,6 +126,14 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #'   \item{cluster}{the function used to perform the clustering on the subsamples.}
 #' @author Harry Southworth
 #' @export conclus
+#' @example
+#' nvts <- novartis[, -c(1:2)]
+#' nvts <- apply(nvts, 2, function(X) rscale(deskew(X)))
+#' cc <- conclus(nvts, K=7)
+#' ggplot(cc)
+#' s <- summary(cc)
+#' s
+#' ggplot(s)
 conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=FALSE,
                     ncores=1){
   theCall <- match.call()
