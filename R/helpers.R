@@ -19,7 +19,7 @@ rskew <- function(x, trim=.05, na.rm=TRUE){
   x <- trim.hilo(x, trim=trim)
 
   top <- sum((x - mean(x))^3) / length(x)
-  btm <- sd(x)^3
+  btm <- sqrt(var(x) * (length(x) - 1) / length(x))
 
   top / btm
 }
@@ -71,8 +71,6 @@ deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05){
     x <- x[!is.na(x)]
   }
 
-  x <- trim.hilo(x, trim=trim)
-
   trans <- function(par=c(a, b), x){
     a <- par[1]
     b <- par[2]
@@ -83,12 +81,12 @@ deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05){
     }
   }
 
-  fun <- function(par, x){
+  fun <- function(par, x, trim){
     if (any(x + par[2] < 0)){
       10^6
     }
     x <- trans(par, x)
-    res <- rskew(x)^2
+    res <- rskew(x, trim=trim)^2
     if (is.na(res)){
       10^6
     } else {
@@ -96,8 +94,8 @@ deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05){
     }
   }
 
-  res <- optim(par=c(a=0, b= -min(x) + 1), fn=fun, x=x, method="L-BFGS-B",
-               lower=c(-Inf, -min(x) + 1))
+  res <- optim(par=c(a=0, b= -min(x) + 1), fn=fun, x=x, trim=trim,
+               method="L-BFGS-B", lower=c(-Inf, -min(x) + 1))
 
   out <- trans(res$par, x)
   attr(out, "par") <- res$par
