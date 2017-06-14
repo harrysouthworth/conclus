@@ -54,7 +54,18 @@ rscale <- function(x, na.rm=TRUE){
   (x - median(x)) / mad(x)
 }
 
-deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05, scale=rscale){
+#' (Robustly) deskew a numeric vector.
+#' @param x A numeric vector.
+#' @param alpha Power parameter in a Box-Cox transformation.
+#' @param beta Shift parameter in a Box-Cox transformation.
+#' @param na.rm Whether to remove missing values. Defaults to \code{na.rm=TRUE}.
+#' @param trim How much to trim from either end of \code{x}. Defaults to \code{trim=0.05}.
+#' @return A numeric vector which has been transformed to minimize its (trimmed) skewness.
+#'   The vector has attributes \code{par} giving the optimzed values of alpha and beta,
+#'   and \code{convergence} which is the convergence code returned by \code{stats::optim}.
+#' @details The function trims the data as instructed then uses \code{stats::optim}
+#'   to find the Box-Cox parameters that minimize the squared skewness.
+deskew <- function(x, alpha, beta, na.rm=TRUE, trim=.05){
   if (na.rm){
     x <- x[!is.na(x)]
   }

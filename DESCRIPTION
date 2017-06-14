@@ -10,6 +10,10 @@ Description: Consensus clustering with support for user-specified clustering
 License: GPL-2
 Depends:
     cluster,
-    ggplot2
+    ggplot2,
+    dplyr,
+    tidyr,
+    gridExtra
+Suggests: testthat, parallel
+LazyData: true
 RoxygenNote: 6.0.1
-LazyLoad: yes
