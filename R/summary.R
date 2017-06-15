@@ -99,9 +99,9 @@ print.conclus <- function(x, digits=3, ...){
   print(x$call)
   x <- summary(x)
   cat("\nAUC\n")
-  print(x$AUC, digits=digits)
+  cat(round(x$AUC, digits=digits))
   cat("\nDelta\n")
-  print(x$Delta, digits=digits)
+  cat(round(x$Delta, digits=digits))
   invisible()
 }
 

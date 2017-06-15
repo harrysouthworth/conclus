@@ -31,3 +31,23 @@ rscale <- function(x, center=TRUE, scale=TRUE, na.action=na.omit){
     x
   }
 }
+
+#' Get cluster memeberships from a conclus object
+#' @param x An object of class 'conclus', as returned by \code{conclus}.
+#' @param k An integer between 2 and the maximum number of clusters considered by
+#'   \code{conclus}. Defaults to \code{k=NULL} and the cluster memberships for all
+#'   numbers of clusters considered is returned.
+#' @export
+membership <- function(x, k=NULL){
+  if (class(x) != "conclus"){
+    stop("x should have class 'conclus'")
+  }
+
+  if (is.null(k)){
+    x$membership
+  } else if (K >= 2 & k <= max(x$K)){
+    x$membership[, k-1]
+  } else {
+    stop(paste("k should be between 2 and", max(x$K)))
+  }
+}

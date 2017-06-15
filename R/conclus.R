@@ -126,13 +126,32 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #'   \item{cluster}{the function used to perform the clustering on the subsamples.}
 #' @author Harry Southworth
 #' @export conclus
-#' @example
-#' nvts <- apply(novartis, 2, function(X) rscale(deskew(X)))
-#' cc <- conclus(nvts, K=7)
+#' @examples
+#' # The pluton data
+#' cc <- conclus(dist(pluton), K=7) # default PAM clustering
 #' ggplot(cc)
-#' s <- summary(cc)
+#' ggplot(summary(cc))
+#' # Do the Gaussian3 and Unform1 examples from Monti et al
+#' # First, they used average linkage, so define a new function
+#' aveHclustCons <- function(x, k){
+#'   stats::cutree(hclust(x, method="average"), k)
+#' }
+#' # Now pass it into conclus with the Gaussian3 data
+#' ccg <- conclus(daisy(t(Gaussian3)), K=6, cluster=aveHclustCons, subsample=.8, R=500, ncores=7)
+#' ggplot(ccg, low="white", high="red")
+#' s <- summary(ccg)
 #' s
 #' ggplot(s)
+#' # Those are similar to Figures 2 and 3. Do the missing histogram
+#' hist(ccg$M[[2]], col="red")
+#'
+#' # Now Uniform 1
+#' ccu <- conclus(daisy(t(Uniform1)), K=6, cluster=aveHclustCons, subsample=.8, R=500, ncores=7)
+#' ggplot(ccu, low="white", high="red")
+#' su <- summary(ccu)
+#' su
+#' ggplot(su)
+#' hist(c(ccu$M[[2]]), col="green")
 conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=FALSE,
                     ncores=1){
   theCall <- match.call()
@@ -191,7 +210,7 @@ conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=
 
 #' @method ggplot conclus
 #' @export
-ggplot.conclus <- function(data, mapping, low="white", high="blue", legend.position="none", ..., environment){
+ggplot.conclus <- function(data, mapping, low="peachpuff", high="blue", legend.position="none", ..., environment){
   lvls <- paste0("k=", 2:max(data$K))
   d <- lapply(data$M, as.data.frame)
 
