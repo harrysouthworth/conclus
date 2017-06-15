@@ -202,14 +202,16 @@ ggplot.conclus <- function(data, mapping, low="white", high="blue", legend.posit
     d[[X - 1]]
   })
 
+  plt <- colorRampPalette(c(low, high))
 
   p <- list()
   for (i in 1:(max(data$K) - 1)){
     pd <- mutate(d[[i]], vars=factor(vars, levels=unique(vars)),
                  vars2=factor(vars2, levels=unique(vars2)))
-    p[[i]] <- ggplot(pd, aes(vars, vars2)) +
-                geom_tile(aes(fill=M), color=low) +
-                scale_fill_gradient(low=low, high=high) +
+
+    p[[i]] <- ggplot(pd, aes(vars, vars2, fill=M)) +
+                geom_tile() +
+                scale_fill_gradientn(colors=plt(10)) +
       scale_x_discrete("", breaks=NULL) +
       scale_y_discrete("", breaks=NULL) +
       theme(legend.position=legend.position) +
@@ -217,4 +219,5 @@ ggplot.conclus <- function(data, mapping, low="white", high="blue", legend.posit
   }
 
   do.call("grid.arrange", p)
+  invisible(p)
 }
