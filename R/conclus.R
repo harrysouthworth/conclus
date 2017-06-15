@@ -127,8 +127,7 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #' @author Harry Southworth
 #' @export conclus
 #' @example
-#' nvts <- novartis[, -c(1:2)]
-#' nvts <- apply(nvts, 2, function(X) rscale(deskew(X)))
+#' nvts <- apply(novartis, 2, function(X) rscale(deskew(X)))
 #' cc <- conclus(nvts, K=7)
 #' ggplot(cc)
 #' s <- summary(cc)
@@ -149,24 +148,26 @@ conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=
   membership <- matrix(0, nrow=nrow(diss), ncol=K-1)
   rownames(membership) <- rownames(diss)
 
+  # Set up parallelization
+  if (is.null(ncores)){
+    ncores <- parallel::detectCores() -1
+  }
+  if (ncores > 1){
+    cl <- parallel::makeCluster(ncores)
+  }
+
   for (k in 2:K){
     if (verbose){
       message(paste("Clustering with k =", k))
     }
 
-    # Set up parallelization
-    if (is.null(ncores)){
-      ncores <- parallel::detectCores() -1
-    }
     if (ncores == 1){
       res <- replicate(R, subsampleCluster(diss, k, cluster, subsample), simplify=FALSE)
     } else {
-      cl <- parallel::makeCluster(ncores)
       seeds <- as.integer(runif(R, -(2^31 - 1), 2^31))
 
       res <- parallel::parLapply(cl, X=1:R, subsampleCluster,
                                  diss=diss, k=k, cluster=cluster, subsample=subsample)
-      parallel::stopCluster(cl)
     }
     M <- averageConnectivity(res, rownames(diss))
 
@@ -175,6 +176,9 @@ conclus <- function(diss, cluster=pamCons, subsample=.5, K=NULL, R=100, verbose=
     o <- order(membership[, k-1])
 
     out[[k - 1]] <- M[o, o]
+  } # Close for (k in
+  if (ncores > 1){
+    parallel::stopCluster(cl)
   }
 
   colnames(membership) <- paste0("k=", 2:K)
