@@ -24,8 +24,6 @@ clusterConsensus <- function(x){
       # Each item of x$M is ordered, x$membership is not
       oi <- x$membership[o[, k-1], k-1] == i
       subM <- x$M[[k-1]][oi, oi, drop=FALSE]
-      diag(subM) <- 0
-
       N <- nrow(subM)
       if (is.null(N)){
         # A single item in a cluster

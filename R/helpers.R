@@ -45,7 +45,7 @@ membership <- function(x, k=NULL){
 
   if (is.null(k)){
     x$membership
-  } else if (K >= 2 & k <= max(x$K)){
+  } else if (k >= 2 & k <= max(x$K)){
     x$membership[, k-1]
   } else {
     stop(paste("k should be between 2 and", max(x$K)))
