@@ -130,59 +130,36 @@ test_that("averaging connectivity matrices behaves as expected", {
   } # Close for (i in 1:)
 })
 
-test_that("trim.hilo behaves as expected", {
-  x <- rnorm(100)
-  expect_equal(length(trim.hilo(x, trim=.05)), length(x) * (1 - 2 * .05), label="trim.hilo removes 2*5% correctly")
-  expect_equal(length(trim.hilo(x, trim=.15)), length(x) * (1 - 2 * .15), label="trim.hilo removes 2*15% correctly")
-
-  for (i in 1:100){
-    x <- rnorm(round(runif(1, 30, 3000)))
-    a <- runif(1, 0, .4)
-
-    res <- (length(x) * (1 - 2*a)) - length(trim.hilo(x, a))
-    expect_lt(res, 2, label="trim.hilo removes random amounts correctly")
-  }
-})
-
-test_that("rskew gives sensible outputs", {
-  for (i in 1:10){ # this tests 95% confidence intervals so will fail occasionally
-    fun <- function(){
-      x <- rnorm(1000, 10)
-      # Next line should give 0, > 0, < 0
-      if (any(is.na(log(x)))) browser()
-      c(rskew(x, trim=0), rskew(exp(x), trim=0), rskew(log(x), trim=0))
-    }
-
-    rr <- t(replicate(1000, fun()))
-    ci <- apply(rr, 2, quantile, prob=c(.025, .975))
-
-    expect_true(ci[1, 1] < 0 & ci[2, 1] > 0, label="rskew: Symmetric data have zero skew")
-    expect_true(min(ci[, 2]) > 0, label="rskew: Positively skewed data have positive skew")
-    expect_true(max(ci[, 3]) < 0, label="rskew: Negatively skewed data have negative skew")
-  }
-})
-
 test_that("rscale gives sensible outputs", {
   for (i in 1:100){
     x <- rt(100, df=runif(1, 1, 8)) * runif(1, 1, 100) + runif(1, 0, 10)
-    x <- rscale(x)
+    xs <- rscale(x)
 
-    expect_lt(median(x), 10^{-6}, label="rscale centers data as expected")
-    expect_lt(diff(range(trim.hilo(x, trim=.1))), 6, label="rscale scales data as expected")
+    expect_equal(median(xs), 0, label="rscale centers data as expected")
+    expect_equal(mad(xs), 1, label="rscale scales data as expected")
+
+    x <- x + 100
+    xs <- rscale(x, center = FALSE)
+
+    expect_gt(median(xs), 0, label="rscale doesn't center when told not to")
+    expect_equal(mad(xs), 1, label="rscale uncentered output scaled as expected")
+
+    xs <- rscale(x, scale=FALSE)
+
+    expect_equal(median(xs), 0, label="rscale unscaled output centered as expected")
+    expect_gt(mad(xs), 1, label="rscale doesn't scale when told not to")
+
+    xs <- rscale(x, center=FALSE, scale=FALSE)
+    expect_identical(x, xs, label="rscale neither centers nor scales when told not to")
+
+    # Missing values
+    nasize <- sample(3:50, size=1)
+    ii <- sample(1:100, size=nasize, replace=FALSE)
+    x[ii] <- NA
+    xs <- rscale(x)
+    expect_equal(length(xs), length(x), label="rscale returns object of same length as input when there are NAs")
+    expect_equal(sum(is.na(xs)), nasize, label="rscale returns object with correct number of missing values")
+
+    expect_error(xs <- rscale(x, na.action=na.fail), label="rscale fails with NAs when na.action=na.fail")
   }
 })
-
-test_that("deskew gives sensible outputs", {
-  for (i in 1:100){
-    x <- rnorm(1000, 4)
-    a <- sample(c(-2, -1, -.5, 0.001, .5, 2), size=1)
-    b <- runif(1, 1, 10)
-
-    y <- ((x + b)^a - 1) / a
-
-    dy <- deskew(y)
-    #abs(rskew(dy, trim=0)) - abs(rskew(y, trim=0))
-    expect_lt(abs(rskew(dy, trim=0)) - abs(rskew(y, trim=0)), .2, label="deskew reduces skew")
-  }
-})
-
