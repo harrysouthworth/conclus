@@ -151,7 +151,7 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #' hist(ccg$M[[2]], col="red")
 #'
 #' # Now Uniform 1
-#' ccu <- conclus(daisy(t(Uniform1)), K=6, cluster=aveHclustCons, subsample=.8, R=500, ncores=7)
+#' ccu <- conclus(daisy(Uniform1), K=6, cluster=aveHclustCons, subsample=.8, R=500, ncores=7)
 #' ggplot(ccu, low="white", high="red")
 #' su <- summary(ccu)
 #' su

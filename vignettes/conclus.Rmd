@@ -1,0 +1,336 @@
+---
+title: "An Introduction to the conclus Package"
+output: rmarkdown::html_vignette
+fig_width: 8
+fit_height: 6
+vignette: >
+  %\VignetteIndexEntry{An Introduction to the conclus Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r setup, include=FALSE}
+set.seed(19561013)
+library(knitr)
+opts_chunk$set(out.extra = 'style="display:block; margin: auto"',
+               fig.align = "center", dev = "png")
+```
+
+## Introduction ##
+
+_Cluster analysis_, sometimes known as _unsupervised learning_ is a common
+statistical task. In short, it involves taking several measurements on each of
+several objects, and attempting to find groups (clusters) into which objects
+naturally fall. Objects in the same cluster should be more similar to each
+other than to those in other clusters. Where it differs from more
+common statistical classification tasks, or _supervised learning_, is that
+we do not know in advance how many clusters exist (and there might be only 1!).
+We therefore use algorithms to guide us.
+
+A popular book-length treatment of the subject is _Finding Groups in Data_
+by Kaufman and Rousseeuw (Wiley, 1990, 2005). Unfortunately, that book appears
+to be out of print and second hand copies are going at prohibitive prices. For an
+alternative introduction, see Chapter 14 of
+[Hastie, Tibshirani and Friedman](https://statweb.stanford.edu/~tibs/ElemStatLearn/)
+(Springer, 2009).
+
+A difficult in practice is that at some point we need to make a decision about
+how many clusters we believe there to be (or at least suggest a small number
+of candidates). Tools such as the _gap statistic_ (see the help file for
+`clusGap` in the **cluster** package in R) can help with this, but additional
+tools are welcome.
+
+A weakness of many clustering algorithms is that they will tend to produce
+quite different looking results from similar datasets: they are said to be
+_unstable_. Similar issues arise with classification trees, for example.
+
+For unstable algorithms in general, a common approach is to take random samples
+from the available data, fit the model to each sample, and then average over
+the outputs of the models.
+[Breiman named this approach 'Bootstrap aggregating'](https://www.stat.berkeley.edu/~breiman/bagging.pdf)
+or _bagging_ for short.
+
+The original bagging idea involved repeatedly taking samples, with replacement,
+of the same size as the original data. Various authors have since discovered that
+taking random subsamples of 50% (without replacement) leads to similar
+results at lower computational expense. [Stability selection](https://arxiv.org/pdf/0809.2932.pdf)
+is just one example of this idea in practice.
+
+Given the success of bagging and subsampling in classification, regression and
+variable selection, it will be no surprise that similar ideas work in clustering.
+
+## Consensus clustering ##
+_Consensus clustering_ was introduced by [Monti et al in 2003](http://www.cs.utexas.edu/users/ml/biodm/papers/MLJ-biodm2.pdf).
+The method amounts to the following:
+
+* Take a random subsample (say 50%) of the data;
+* Run a clustering algorithm assuming there to be k=2 clusters;
+* Save the class memberships of the observations;
+* Repeat lots of times;
+* Repeat with k=3, 4, ..., K clusters.
+
+The results can then be summarized in order to provide insight on:
+
+* Whether any genuine clusters appear to exist;
+* How similar are items are within each cluster;
+* What is the best value of k (or a small number of candidate values of k).
+
+Monti et al suggest various summaries and plots to address these questions.
+
+Note that no particular clustering algorithm is specified: the user can use
+their own favourite, or try several algorithms to see what different properties
+they exhibit on the data to hand.
+
+## The **conclus** package ##
+The **conclus** package for [R](https://www.r-project.org/) is an implementation
+of consensus clustering that has the following features:
+
+* The user can pass in their own clustering function;
+* Various summaries and plots can be easily produced;
+* The user interface will seem natural to most R users;
+* The code forces the user to think about distance metric (the pain will do you good!);
+* Additional information is easily extracted from the returned object.
+
+### Examples ###
+Firstly, we'll illustrate the main features of **conclus**, then we'll reproduce
+some of the results in Monti et al. Finally, we'll take a look at a more interesting
+example.
+
+#### Plutons ####
+The pluton dataset is included in the R package **cluster** and was originally
+described in Rousseeuw, Kaufman and Trauwaert, 1996. See the help file for `pluton`
+for more information.
+
+```{r pluton, message=FALSE}
+library(conclus)
+?pluton
+dim(pluton)
+head(pluton)
+
+gather(pluton, pluton, value) %>%
+  ggplot(aes(value)) +
+  geom_histogram(fill="blue", bins=15) +
+  facet_wrap(~pluton, scales="free")
+```
+From looking at the histograms, and from reading the help file, it appears the
+measurement scales are not really comparable in that, for example, the range of
+observable values of Pu238 does not include any of the observable range of values
+of Pu239. As such, we might want to scale
+each variable before attempting any clustering. Note that this procedure might
+or might not aid the analysis.
+
+As noted previously, **conclus** forces the user to think about distance metrics.
+(The main reason is that many applications work with mixed continuous and binomial data,
+and it's especially important to be clear about how distances between binomial features
+are to be defined.) Therefore, we can't just stuff the `pluton` data into `conclus`.
+We'll use the `daisy` function from the **cluster** package to create the distance
+matrix. First, we'll proceed without rescaling the data.
+
+```{r pluton_daisy}
+pd <- daisy(pluton)
+ccp <- conclus(pd, K=10)
+ggplot(ccp)
+```
+
+The `conclus` function defaults to taking 100 subsamples of the data for each choice
+of the number of clusters k, (k = 2, ..., 10 in this case). It then computes the
+_consensus matrix_ for each value of k: the proportion of times items _i_ and _j_ were
+included in the subsample,
+and were clustered into the same group. In the figure above, deep blue indicates good
+consensus; values near to 1. Peachpuff (that's right, the color is called 'peachpuff')
+indicates consensus in the opposite direction; values close to 0 indicating neither
+items were in the cluster. Colors between deep blue and peachpuff indicate disagreement
+between the different runs of the algorithm.
+
+The reason the panels in the above figure appear approximately block-diagonal is that
+the consensus matrices have been clustered themselves, to arrange similar items together.
+If perfect consensus were obtained, we'd see a perfectly block-diagonal structure. So
+to decide the number of real clusters in the data, we need to choose a value of k for
+which we see bunch of blue squares on the diagonal. Maybe 6, 7 or 8 looks ok, but that's
+quite a lot of clusters for a fairly small dataset. Let's get some more help
+
+```{r pluton_summary}
+sp <- summary(ccp)
+sp
+```
+
+The output of the summary function shows us the area under the cumulative distribution
+function (the AUC of the CDF: compound TLAs!). We are also show summary statistic
+Delta, computed as the proportional increase in the AUC resulting from incrementing
+k. For example, at k=3, we have (0.642 - 0.473) / 0.475 = 0.358 (adjusting for rounding
+error). As we can see,
+&Delta;(k) is still quite large, and AUC is rising quite quickly, up till k=5 or 6,
+and then they appear to level off.
+
+(Following Monti et al, Section 3.3, &Delta;(k) is actually calculated as the increase
+in AUC relative to the maximum AUC for lower values of k.)
+
+The cluster consensus matrix shows the consensus across random subsamples for each
+cluster for each value of k. Values of 1 indicate perfect consensus - all subsamples
+identified all pairs of observations within that cluster to be in the same cluster.
+
+We can get a better look at the CDF, its AUC and &Delta;(k) by plotting the
+summary object.
+
+```{r pluton_summary_plot}
+ggplot(sp)
+```
+
+Looking at the left-hand panel, the CDFs of the consensus index at each level of k,
+we see a big gap between the CDFs for k=2 and k=3, and similarly between k=3 and k=4.
+These features are evident in the right-hand panels representing the AUC and &Delta; at
+each k. Looking at &Delta; in particular, the number of clusters would look to be maybe 6.
+
+Next, let's redo the whole thing, but scaling the margins of the data first. Note that
+you can do that in `daisy` using `stand=TRUE` in the call. However, that uses the mean
+to center the data (if you didn't know that, that's the kind of reason **conclus** wants
+you to think about distance measures), and I prefer to use the median. So **conclus**
+provides function `rscale` as an alternative. Both `daisy` and `rscale` use the median
+absolute deviation (mad) as the scale measure. For kicks, we'll also use Manhattan
+distance instead of Euclidean distance.
+
+```{r pluton_rscale}
+pp <- apply(pluton, 2, rscale)
+ccpp <- conclus(daisy(pp, "manhattan"), K=10)
+ggplot(ccpp)
+```
+```{r pluton_rscale_summary}
+ggplot(summary(ccpp))
+```
+
+From the plots above, there's little difference between those and the versions resulting from
+unscaled data and Euclidean distance.
+
+So let's look at what clusters we think we might have discovered, suppose there to be 6.
+
+```{r pluton_pairs, message=FALSE}
+
+pluton$clusters <- membership(ccpp, k=6)
+library(GGally) # For ggpairs
+pluton$clusters <- factor(pluton$clusters) # to keep ggpairs happy
+ggpairs(pluton, columns=1:4, aes(color=clusters), upper="blank")
+
+```
+In my humble opinion, that's quite a nice result.
+
+If you've noticed that I've been heavy-handedly stressing the subjectivity involved
+in choosing the number of clusters, good! It's deliberate, of course. Having to
+apply subjectivity when we don't know what we're looking for is part of the
+process.
+
+Finally, notice that earlier in this article, it was stated that there
+are lots of clustering algorithms available, but the analysis of the plutons data
+didn't even mention which was used! In fact, it used PAM - Partitioning Around Medoids.
+That's the default in `conclus` (hint! - see the help file). Other options are
+made available, but in the next example, we'll write our own in order to follow
+Monti et al closely.
+
+Let's now reproduce some of the results in Monti et al.
+
+#### Uniform1 ####
+Monti et al describe various simulated datasets used for evaluating the consensus
+clustering approach. The first of these they label _Uniform1_ and is included
+in the **conclus** package, having been downloaded from
+[the paper's website](http://portals.broadinstitute.org/cgi-bin/cancer/datasets.cgi#87)
+(whose URL has been known to change in the past, and don't blame me if it changes in
+the future). The data are observations from a 600 dimensional Uniform(0, 1) distribution.
+
+Prior to anything else, we'll need to use the same clustering approach as they used:
+hierarchical clustering with average linkage.
+
+If you look at the help file for `conclus`, you'll notice that the default clustering
+function is `pamCons`. Others available in the package are `hclustCons` and `fannyCons`.
+As the help file states, these are all just simple wrappers around their parent functions,
+modified to require precisely 2 arguments, x - a dissimilarity matrix, and k - the number
+of clusters to find, and to return nothing other than an integer vector of cluster memberships.
+
+With that in mind, lets write our own function, then pass it into `conclus`, mimicking
+the analysis of Monti et al. Also following Monti et al, we'll use 80% subsampling
+and 500 samples.
+
+```{r uniform1}
+aveHclustCons <- function(x, k){
+  cutree(hclust(x, method="average"), k=k)
+}
+
+ccu <- conclus(daisy(Uniform1), K=6, cluster=aveHclustCons, subsample=0.8, R=500)
+ggplot(ccu, low="white", high="red")
+```
+
+Similar to Figure 2 of Monti et al, the consensus matrix for k=3 is largely a  mass of red
+mess, with a couple of smaller darker red blocks in the upper right corner (upper left
+corner in the original - the matrices are transposed is all).
+
+Let's look at the summary measures and compare them with the top row of Figure 3 in the
+original paper.
+
+```{r Uniform1_summary}
+ggplot(summary(ccu))
+```
+The CDFs look similar to in Monti et al, as does the plot of &Delta;(k). We show
+the AUC here, which doesn't appear in Monti et al. Let's now create the histogram
+of the consensus distribution.
+
+```{r Uniform1_hist}
+hist(ccu$M[[2]], col="green") # 2 because k=2 is in the first, so k=3 in the second
+```
+Again, the plot looks similar to the version in Monti et al.
+
+Let's now move on to the Gaussian3 example.
+
+#### Gaussian3 ####
+Following Monti et al, we'll use the same approach with Gaussian3 as we followed
+with Uniform1.
+
+```{r Gaussian3}
+ccg <- conclus(daisy(Gaussian3), K=6, cluster=aveHclustCons, subsample=0.8, R=500)
+ggplot(ccg, low="white", high="red")
+```
+For k=3, we clearly see the separation of the data into the known 3 groups.
+
+```{r Gaussian3_summary}
+ggplot(summary(ccg))
+```
+Again, the plot of &Delta;(k), and of the CDFs, look like those in Monti et al. Notice that
+the CDF for k=3 is a perfect step function. In this case, the algorithm has achieved perfect
+consensus with 3 clusters.
+
+```{r Gaussian_summary_text}
+summary(ccg)
+```
+From the textual summary, we see that with k=3, there is 100% consensus (i.e. all
+(_i_, _j_) pairs are clustered together in every subsample they both appear in), so
+the CDF appears to be correct.
+
+#### St Jude's leukemia data ####
+The final example is intended to be a little more interesting and will go beyond
+outlining the main features of **conclus**, hopefully finding some insights into
+the data.
+
+The St Jude leukemia data consist of 983 measurements taken on each of 246 patients.
+There's no particular reason to cluster features - we can just as well cluster
+patients (and doing so will be faster).
+
+We are told that there are 6 distinct groups in the data. With such a large number
+of dimensions, it will be pretty fruitless to look at simple plots, so we'll
+dive in and do the clustering.
+We'll also use this example to show off the parallelization
+of `conclus` (**note** though that using more than a single core (the default) does not
+necessarily speed things up).
+
+```{r stjude_conclus}
+
+sstjude <- apply(stjude, 2, rscale)
+dj <- daisy(t(sstjude))
+
+ccj <- conclus(dj, K=10, ncores=7)
+s <- summary(ccj)
+s
+ggplot(s)
+```
+From the output, 6 (or maybe 5 or 7) clusters looks reasonable. So, success!
+
+It would be nice, though, to see if we can figure out how the features are defined.
+That's beyond the scope of this article, though. Good luck! And have fun with **conclus**.
+
