@@ -1,12 +1,13 @@
 #' @importFrom cluster pam fanny daisy
-#' @importFrom stats hclust as.dist runif
+#' @importFrom stats hclust as.dist runif mad median na.omit
 #' @importFrom ggplot2 ggplot aes geom_tile theme facet_wrap geom_line element_blank
 #'   scale_x_continuous scale_y_continuous geom_point scale_fill_gradient
-#'   scale_y_discrete scale_x_discrete
+#'   scale_y_discrete scale_x_discrete scale_fill_gradientn geom_step label_parsed
 #' @importFrom tidyr gather
 #' @importFrom dplyr mutate bind_rows
 #' @importFrom gridExtra grid.arrange
 #' @importFrom graphics lines plot
+#' @importFrom grDevices colorRampPalette
 
 globalVariables(c("%>%", "M", "vars", "vars2", "k", "CDF", "index", "pluton"))
 
@@ -24,7 +25,7 @@ globalVariables(c("%>%", "M", "vars", "vars2", "k", "CDF", "index", "pluton"))
 #'   Machine Learning, 52, 91 -- 118, 2003
 NULL
 
-#' Gaussian3 simulated data
+#' Gaussian3 and Uniform1 simulated data
 #' @name Gaussian3
 #' @aliases Uniform1
 #' @docType data
@@ -42,17 +43,14 @@ if (FALSE){
   library(ConsensusClusterPlus)
   ccp <- ConsensusClusterPlus(dist(pluton), maxK=10, pItem=.5, clusterAlg="pam", reps=1000)
   ii <- calcICL(ccp)[[2]]
-  save(ii, file="data/ii.rda")
+  save(ii, file="R/sysdata.rda")
 }
 
 #' Item consensus estimates from an alternative implementation
-#' @name ii
-#' @docType data
-#' @aliases ii
 #' @format A data frame containing the output of running
 #'  \code{calcICL(ConsensusClusterPlus(dist(pluton), maxK=10, pItem=.5, clusterAlg="pam", reps=1000))[[2]]}
 #'  only included for testing \code{itemConsensus}.
 #' @source Output from \code{ConcensusClusterPlus::calcICL}
-#' @keywords datasets
 #' @references Wilkerson, M.D., Hayes, D.N. (2010). ConsensusClusterPlus: a class discovery tool with confidence assessments and item tracking. Bioinformatics, 2010 Jun 15;26(12):1572-3
+#' @noRd
 NULL

@@ -9,7 +9,7 @@ cdf.conclus <- function(x){
   for (i in 1:length(x$M)){
     M <- c(x$M[[i]][ii])
 
-    cc <- sort(unique(M))
+    cc <- sort(unique(c(0, M)))
 
     cdf <- sapply(cc, function(X) sum(M <= X)) / btm
 
@@ -72,9 +72,12 @@ auc.conclus <- function(x){
 delta.conclus <- function(auc){
   # auc should be the output of auc.conclus
   # Need to account for cases where AUC can decline as number of clusters increases
-  delta <- mauc <- auc[1]
+  # See the textual description in Monti et al, beneath the formulae that are
+  #   given for delta
+  delta <- rep(0, length(auc))
+  mauc <- delta[1] <- auc[1]
   for (i in 2:length(auc)){
-    delta <- c(delta, (auc[i] - mauc) / mauc)
+    delta[i] <- (auc[i] - mauc) / mauc
     mauc <- max(auc[i], mauc)
   }
   delta
@@ -134,7 +137,7 @@ ggplot.summary.conclus <- function(data, mapping=NULL, legend.position="bottom",
 
   cdfplot <-
   ggplot(data, aes(index, CDF, color=k)) +
-    geom_line(size=2) +
+    geom_step(size=2, alpha=.7) +
     theme(legend.title=element_blank(), legend.position=legend.position) +
     scale_x_continuous("Consensus index", limits=c(0, 1)) +
     scale_y_continuous("CDF", limits=c(0, 1))

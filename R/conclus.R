@@ -1,30 +1,33 @@
 #' Simple wrappers to clustering functions that return just the class memberships
 #' @aliases fannyCons hclustCons
+#' @usage pamCons(x, k)
+#' fannyCons(x, k)
+#' hclustCons(x, k)
 #' @param x A dissimilarity matrix as produced, for example, by \code{cluster::daisy}
 #'   or \code{stats::dist}.
 #' @param k The number of clusters to find.
 #' @details The \code{conclus} function takes an argument \code{cluster} that should
-#'   be a function with precisely to arguments, \code{x} and \code{k}. The
+#'   be a function with precisely 2 arguments, \code{x} and \code{k}. The
 #'   function should return an integer vector of cluster memberships for each item
 #'   in \code{x}.
-#' @export
+#' @export pamCons
 pamCons <- function(x, k){
   cluster::pam(x, k, cluster.only=TRUE)
 }
 
-#' @export
+#' @export fannyCons
 fannyCons <- function(x, k){
   cluster::fanny(x, k, cluster.only=TRUE, diss=TRUE)$clustering
 }
 
-#' @export
+#' @export hclustCons
 hclustCons <- function(x, k){
   stats::cutree(hclust(x, method="complete"), k)
 }
 
 #' Compute connectivity matrix from class memberships
 #' @param x Numeric (integer) vector of class memberships.
-#' @export connectivity
+#' @noRd
 connectivity <- function(x){
   k <- length(unique(x)) # number of clusters
 
@@ -37,7 +40,7 @@ connectivity <- function(x){
 #' @param x The output of \code{subsampleCluster}.
 #' @param nms A character vector to be used for row and column names. Defaults
 #'   to \code{nms=NULL} and assigning names is not attempted.
-#' @export averageConnectivity
+#' @noRd
 averageConnectivity <- function(x, nms=NULL){
   # Compute the average connectivity matrix
   M <- apply(sapply(x, function(X) connectivity(X[[1]]), simplify="array"), 1:2, sum)
@@ -70,6 +73,7 @@ averageConnectivity <- function(x, nms=NULL){
 #' @param seeds Vector of seeds used by parLapply
 #' @details This function is called by conclus and is split out separately
 #'   purely to enable unit testing
+#' @noRd
 subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
   if (!is.null(seeds)){
     set.seed(seeds[[X]])
@@ -125,6 +129,7 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #'   \item{K}{the values of k in 2:K;}
 #'   \item{cluster}{the function used to perform the clustering on the subsamples.}
 #' @author Harry Southworth
+#' @seealso \code{\link{pamCons}} \code{\link{summary.conclus}}
 #' @export conclus
 #' @examples
 #' # The pluton data
@@ -137,7 +142,7 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #'   stats::cutree(hclust(x, method="average"), k)
 #' }
 #' # Now pass it into conclus with the Gaussian3 data
-#' ccg <- conclus(daisy(t(Gaussian3)), K=6, cluster=aveHclustCons, subsample=.8, R=500, ncores=7)
+#' ccg <- conclus(daisy(Gaussian3), K=6, cluster=aveHclustCons, subsample=.8, R=500, ncores=7)
 #' ggplot(ccg, low="white", high="red")
 #' s <- summary(ccg)
 #' s

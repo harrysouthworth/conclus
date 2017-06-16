@@ -1,5 +1,9 @@
 #' Robustly scale a numeric vector.
 #' @param x A numeric vector.
+#' @param center Logical, whether to center using the median. Defauts to
+#'   \code{center = TRUE}.
+#' @param scale Logical, whether to scale using the mad. Defaults to
+#'   \code{scale = TRUE}.
 #' @param na.action What to do when there are missing values. Defaults to
 #'   \code{na.action=na.omit} and missing values are returned in the same
 #'   places as in \code{x}. The alternative is \code{na.action=na.fail} which
