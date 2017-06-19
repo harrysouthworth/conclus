@@ -20,8 +20,8 @@ opts_chunk$set(out.extra = 'style="display:block; margin: auto"',
 ## Introduction ##
 
 _Cluster analysis_, sometimes known as _unsupervised learning_ is a common
-statistical task. In short, it involves taking several measurements on each of
-several objects, and attempting to find groups (clusters) into which objects
+statistical task. In short, it involves  attempting to find groups
+(clusters) into which objects
 naturally fall. Objects in the same cluster should be more similar to each
 other than to those in other clusters. Where it differs from more
 common statistical classification tasks, or _supervised learning_, is that
@@ -55,7 +55,10 @@ The original bagging idea involved repeatedly taking samples, with replacement,
 of the same size as the original data. Various authors have since discovered that
 taking random subsamples of 50% (without replacement) leads to similar
 results at lower computational expense. [Stability selection](https://arxiv.org/pdf/0809.2932.pdf)
-is just one example of this idea in practice.
+is uses the idea to inform variable selection, and the same idea is
+also part of the [random forest](https://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm)
+and [stochastic gradient boosting](http://statweb.stanford.edu/~jhf/ftp/stobst.pdf)
+algorithms.
 
 Given the success of bagging and subsampling in classification, regression and
 variable selection, it will be no surprise that similar ideas work in clustering.
@@ -183,11 +186,12 @@ These features are evident in the right-hand panels representing the AUC and &De
 each k. Looking at &Delta; in particular, the number of clusters would look to be maybe 6.
 
 Next, let's redo the whole thing, but scaling the margins of the data first. Note that
-you can do that in `daisy` using `stand=TRUE` in the call. However, that uses the mean
-to center the data (if you didn't know that, that's the kind of reason **conclus** wants
-you to think about distance measures), and I prefer to use the median. So **conclus**
-provides function `rscale` as an alternative. Both `daisy` and `rscale` use the median
-absolute deviation (mad) as the scale measure. For kicks, we'll also use Manhattan
+you can do that in `daisy` using `stand=TRUE` in the call. However, that uses the _mean_
+to center the data and the _mean absolute deviation_ (not standard deviation) to scale
+the data (if you didn't know that, that's the kind of reason **conclus** wants
+you to think about distance measures). I prefer to use the _median_ and _median absolute
+deviation_ (_mad_), so **conclus**
+provides function `rscale` as an alternative. For kicks, we'll also use Manhattan
 distance instead of Euclidean distance.
 
 ```{r pluton_rscale}
@@ -320,7 +324,6 @@ of `conclus` (**note** though that using more than a single core (the default) d
 necessarily speed things up).
 
 ```{r stjude_conclus}
-
 sstjude <- apply(stjude, 2, rscale)
 dj <- daisy(t(sstjude))
 
