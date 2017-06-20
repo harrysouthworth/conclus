@@ -83,19 +83,6 @@ delta.conclus <- function(auc){
   delta
 }
 
-#' @method plot summary.conclus
-#' @export
-plot.summary.conclus <- function(x, ...){
-  auc <- x$AUC
-  x <- x$CDF
-  plot(x[, 1:2], type="l", lwd=2, xlab="Consensus index", ylab="CDF")
-  for (i in 3:ncol(x)){
-    lines(x[, c(1, i)], col=i+1, lwd=2)
-  }
-
-  invisible()
-}
-
 #' @method print conclus
 #' @export
 print.conclus <- function(x, digits=3, ...){

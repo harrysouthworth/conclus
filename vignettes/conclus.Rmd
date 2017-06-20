@@ -1,8 +1,12 @@
 ---
 title: "An Introduction to the conclus Package"
-output: rmarkdown::html_vignette
-fig_width: 8
-fit_height: 6
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+    fig_width: 7
+    fig_height: 5
+bibliography: bibliography.bib
 vignette: >
   %\VignetteIndexEntry{An Introduction to the conclus Package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,28 +22,34 @@ opts_chunk$set(out.extra = 'style="display:block; margin: auto"',
 ```
 
 ## Introduction ##
-
-_Cluster analysis_, sometimes known as _unsupervised learning_ is a common
-statistical task. In short, it involves  attempting to find groups
-(clusters) into which objects
-naturally fall. Objects in the same cluster should be more similar to each
+According to Kaufman and Rousseeuw [-@kaufmanRousseeuw], "Cluster analysis
+is the art of finding groups in data."
+Sometimes known as _unsupervised learning_, cluster analysis is a common
+statistical task. We apply algorithms to a dataset in an attempt to find
+groups of objects that are similar to each other. Objects in the same cluster
+should be more similar to each
 other than to those in other clusters. Where it differs from more
 common statistical classification tasks, or _supervised learning_, is that
 we do not know in advance how many clusters exist (and there might be only 1!).
-We therefore use algorithms to guide us.
 
-A popular book-length treatment of the subject is _Finding Groups in Data_
-by Kaufman and Rousseeuw (Wiley, 1990, 2005). Unfortunately, that book appears
-to be out of print and second hand copies are going at prohibitive prices. For an
+Unfortunately, the book by Kaufman and Rousseeuw is
+out of print at the time of writing. For an
 alternative introduction, see Chapter 14 of
 [Hastie, Tibshirani and Friedman](https://statweb.stanford.edu/~tibs/ElemStatLearn/)
-(Springer, 2009).
+[-@esl].
 
-A difficult in practice is that at some point we need to make a decision about
+A difficulty in practice is that at some point we need to make a decision about
 how many clusters we believe there to be (or at least suggest a small number
 of candidates). Tools such as the _gap statistic_ (see the help file for
-`clusGap` in the **cluster** package in R) can help with this, but additional
-tools are welcome.
+`clusGap` in the **cluster** package [@cluster] in [R](https://www.r-project.org/)
+[@R]) can help with this, but additional tools are welcome.
+
+Another issue is that, because clustering methods are often model-free, many
+algorithms have been suggested over the decades, and there is no single obvious
+way to choose between them.
+
+These kinds of considerations lead to the practice being as much art as science,
+as suggested in the opening quote, above.
 
 A weakness of many clustering algorithms is that they will tend to produce
 quite different looking results from similar datasets: they are said to be
@@ -49,23 +59,24 @@ For unstable algorithms in general, a common approach is to take random samples
 from the available data, fit the model to each sample, and then average over
 the outputs of the models.
 [Breiman named this approach 'Bootstrap aggregating'](https://www.stat.berkeley.edu/~breiman/bagging.pdf)
-or _bagging_ for short.
+[-@bagging] or _bagging_ for short.
 
 The original bagging idea involved repeatedly taking samples, with replacement,
 of the same size as the original data. Various authors have since discovered that
 taking random subsamples of 50% (without replacement) leads to similar
 results at lower computational expense. [Stability selection](https://arxiv.org/pdf/0809.2932.pdf)
+[@meinshausenBuhlmann]
 is uses the idea to inform variable selection, and the same idea is
 also part of the [random forest](https://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm)
-and [stochastic gradient boosting](http://statweb.stanford.edu/~jhf/ftp/stobst.pdf)
+[@rf] and [stochastic gradient boosting](http://statweb.stanford.edu/~jhf/ftp/stobst.pdf) [@stochasticGradientBoosting]
 algorithms.
 
 Given the success of bagging and subsampling in classification, regression and
 variable selection, it will be no surprise that similar ideas work in clustering.
 
 ## Consensus clustering ##
-_Consensus clustering_ was introduced by [Monti et al in 2003](http://www.cs.utexas.edu/users/ml/biodm/papers/MLJ-biodm2.pdf).
-The method amounts to the following:
+_Consensus clustering_ was introduced by [Monti et al in 2003](http://www.cs.utexas.edu/users/ml/biodm/papers/MLJ-biodm2.pdf) [-@consensusClustering].
+The method involves the following:
 
 * Take a random subsample (say 50%) of the data;
 * Run a clustering algorithm assuming there to be k=2 clusters;
@@ -86,24 +97,23 @@ their own favourite, or try several algorithms to see what different properties
 they exhibit on the data to hand.
 
 ## The **conclus** package ##
-The **conclus** package for [R](https://www.r-project.org/) is an implementation
+The **conclus** package for [R](https://www.r-project.org/) [@R] is an implementation
 of consensus clustering that has the following features:
 
 * The user can pass in their own clustering function;
 * Various summaries and plots can be easily produced;
 * The user interface will seem natural to most R users;
-* The code forces the user to think about distance metric (the pain will do you good!);
+* The code forces the user to think about distance metrics (the pain will do you good!);
 * Additional information is easily extracted from the returned object.
 
-### Examples ###
+## Examples ##
 Firstly, we'll illustrate the main features of **conclus**, then we'll reproduce
 some of the results in Monti et al. Finally, we'll take a look at a more interesting
 example.
 
-#### Plutons ####
-The pluton dataset is included in the R package **cluster** and was originally
-described in Rousseeuw, Kaufman and Trauwaert, 1996. See the help file for `pluton`
-for more information.
+### Plutons ###
+The pluton dataset is included in the R package **cluster** [@cluster]:
+see the help file for `pluton` for more information.
 
 ```{r pluton, message=FALSE}
 library(conclus)
@@ -159,7 +169,7 @@ sp
 ```
 
 The output of the summary function shows us the area under the cumulative distribution
-function (the AUC of the CDF: compound TLAs!). We are also show summary statistic
+function (the AUC of the CDF). We also show summary statistic
 Delta, computed as the proportional increase in the AUC resulting from incrementing
 k. For example, at k=3, we have (0.642 - 0.473) / 0.475 = 0.358 (adjusting for rounding
 error). As we can see,
@@ -209,12 +219,10 @@ unscaled data and Euclidean distance.
 So let's look at what clusters we think we might have discovered, suppose there to be 6.
 
 ```{r pluton_pairs, message=FALSE}
-
 pluton$clusters <- membership(ccpp, k=6)
 library(GGally) # For ggpairs
 pluton$clusters <- factor(pluton$clusters) # to keep ggpairs happy
 ggpairs(pluton, columns=1:4, aes(color=clusters), upper="blank")
-
 ```
 In my humble opinion, that's quite a nice result.
 
@@ -226,13 +234,13 @@ process.
 Finally, notice that earlier in this article, it was stated that there
 are lots of clustering algorithms available, but the analysis of the plutons data
 didn't even mention which was used! In fact, it used PAM - Partitioning Around Medoids.
-That's the default in `conclus` (hint! - see the help file). Other options are
+That's the default in `conclus`. Other options are
 made available, but in the next example, we'll write our own in order to follow
 Monti et al closely.
 
 Let's now reproduce some of the results in Monti et al.
 
-#### Uniform1 ####
+### Uniform1 ###
 Monti et al describe various simulated datasets used for evaluating the consensus
 clustering approach. The first of these they label _Uniform1_ and is included
 in the **conclus** package, having been downloaded from
@@ -283,7 +291,7 @@ Again, the plot looks similar to the version in Monti et al.
 
 Let's now move on to the Gaussian3 example.
 
-#### Gaussian3 ####
+### Gaussian3 ###
 Following Monti et al, we'll use the same approach with Gaussian3 as we followed
 with Uniform1.
 
@@ -307,7 +315,15 @@ From the textual summary, we see that with k=3, there is 100% consensus (i.e. al
 (_i_, _j_) pairs are clustered together in every subsample they both appear in), so
 the CDF appears to be correct.
 
-#### St Jude's leukemia data ####
+We can achieve a similar conclusion by use of the gap statistic.
+
+```{r gapGaussian3}
+gs <- clusGap(as.matrix(daisy(Gaussian3)), pam, K.max=10)
+plot(gs)
+```
+
+
+### St Jude's leukemia data ###
 The final example is intended to be a little more interesting and will go beyond
 outlining the main features of **conclus**, hopefully finding some insights into
 the data.
@@ -337,3 +353,4 @@ From the output, 6 (or maybe 5 or 7) clusters looks reasonable. So, success!
 It would be nice, though, to see if we can figure out how the features are defined.
 That's beyond the scope of this article, though. Good luck! And have fun with **conclus**.
 
+## References

@@ -47,7 +47,6 @@ test_that("cluster consensus behaves as expected", {
     expect_equal(min(c(con)), 0, label="clusterConsensus: minimum is 0 for true clusters")
     expect_lte(max(c(con)), 1, label="clusterConsensus: maximum is <= 1 for true clusters")
 
-
     # Get variance of non-zero values. Should dive upwards after k=5
     v <- apply(con, 2, function(X) var(X[X > 0]))
     #plot(v)
