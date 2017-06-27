@@ -52,6 +52,17 @@ test_that("cluster consensus behaves as expected", {
     #plot(v)
 
     expect_gt(mean(v[5:9]), v[4] , label="clusterConsensus: variance dives upwards where there are too many clusters")
+
+    # Generate perfectly separated clusters and check that consensus is 1 (not \lte 1)
+    x1 <- matrix(rnorm(1000, mean=10), ncol=10)
+    x2 <- matrix(rnorm(1000), ncol=10)
+    x3 <- matrix(rnorm(1000, mean=20), ncol=10)
+    x <- rbind(x1, x2, x3)
+
+    cc <- conclus(daisy(x), K=4)
+
+    con <- consensus(cc, type="cluster")
+    expect_equal(sum(con[, 2]), 3, label="clusterConsensus: perfect separation gives consensus 1")
   }
 })
 

@@ -41,7 +41,7 @@ cdf.conclus <- function(x){
 #'   \code{ggplot(objec t)}, for the object that is passed to the \code{summary}
 #'   function.
 #' @export
-summary.conclus <- function(object, ...){
+summary.conclus <- function(object, plot.it=TRUE, ...){
   cdf <- cdf.conclus(object)
   auc <- auc.conclus(cdf)
   delta <- delta.conclus(auc)
@@ -50,6 +50,10 @@ summary.conclus <- function(object, ...){
   res <- list(call=object$call, CDF=cdf, AUC=auc, Delta=delta, Consensus=cons)
 
   class(res) <- "summary.conclus"
+
+  if (plot.it){
+    ggplot(res)
+  }
   res
 }
 
