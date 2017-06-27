@@ -29,6 +29,9 @@ cdf.conclus <- function(x){
 
 #' Compute and return summaries of a 'conclus' object.
 #' @param object An object of class 'conclus'.
+#' @param plot.it Whether to plot the result. Defaults to \code{plot.it=TRUE}.
+#'   If \code{plot.it=FALSE}, the output can be assigned to an object and plotted
+#'   later using \code{ggplot(object)}.
 #' @param ... Not used.
 #' @details The function computes the distribution function of the elements of the
 #'   consensus matrices returned by the call to \code{conclus}. From these, it
