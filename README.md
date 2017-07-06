@@ -1,14 +1,13 @@
 # Consensus Clustering in R #
 
 This is the consensus clustering approach of Monti, Tamayo,
-Mesirov and Golub. Features (will) include the following.
+Mesirov and Golub. Features include the following.
 
 * Users can provide their own clustering functions into conclus.
 * The returned object has print, summary and ggplot methods.
 * The object returned by summary has its own print and ggplot methods.
-* Preprocessing functions for (robustly) deskewing and scaling data are provided.
 * Designed to work specifically with dissimilarity or dist matrices.
-* Test suite under construction.
+* Test suite.
 
 **AstraZeneca** is partially funding this work.
 
