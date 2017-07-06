@@ -1,8 +1,8 @@
 Package: conclus
 Type: Package
 Title: Consensus Clustering
-Version: 0.1
-Date: 2017-0-13
+Version: 0.2
+Date: 2017-7-6
 Author: Harry Southworth
 Maintainer: Harry Southworth <harry@dataclarityconsulting.co.uk>
 Description: Consensus clustering with support for user-specified clustering
@@ -13,7 +13,8 @@ Depends:
     ggplot2,
     dplyr,
     tidyr,
-    gridExtra
+    gridExtra,
+    xtable
 Suggests: testthat, parallel, knitr
 VignetteBuilder: knitr
 LazyData: true

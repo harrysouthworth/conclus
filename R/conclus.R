@@ -129,7 +129,7 @@ subsampleCluster <- function(diss, k, cluster, subsample, X, seeds=NULL){
 #'   \item{K}{the values of k in 2:K;}
 #'   \item{cluster}{the function used to perform the clustering on the subsamples.}
 #' @author Harry Southworth
-#' @seealso \code{\link{pamCons}} \code{\link{summary.conclus}}
+#' @seealso \code{\link{pamCons}},  \code{\link{summary.conclus}}, \code{\link{representatives}}
 #' @export conclus
 #' @examples
 #' # The pluton data

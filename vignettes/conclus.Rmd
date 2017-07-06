@@ -324,10 +324,6 @@ plot(gs)
 
 
 ### St Jude's leukemia data ###
-The final example is intended to be a little more interesting and will go beyond
-outlining the main features of **conclus**, hopefully finding some insights into
-the data.
-
 The St Jude leukemia data consist of 983 measurements taken on each of 246 patients.
 There's no particular reason to cluster features - we can just as well cluster
 patients (and doing so will be faster).
