@@ -14,7 +14,8 @@ cdf.conclus <- function(x){
     cdf <- sapply(cc, function(X) sum(M <= X)) / btm
 
     cdf <- as.data.frame(cbind(index=cc, cdf=cdf))
-    cdf$k <- paste0(x$K[i])
+    #cdf$k <- paste0(x$K[i])
+    cdf$k <- x$K[i]
 
     res[[i]] <- cdf
   }

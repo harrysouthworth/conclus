@@ -92,7 +92,7 @@ itemConsensus <- function(x){
 #' @param k The number of clusters you believe there to be.
 #' @details The function returns the rownames of the representative items, as
 #'   judged by them having the highest item consensus within their allocated
-#'   cluster.
+#'   cluster. If there are ties, the first item is arbitrarily selected.
 #' @seealso \code{\link{consensus}}, \code{\link{conclus}}, \code{\link{assignClusters}}
 #' @export representatives
 representatives <- function(x, k){
@@ -100,6 +100,10 @@ representatives <- function(x, k){
   ii4 <- ii[, 1:k, k-1]
 
   protos <- apply(ii4, 2, function(x) names(x)[x == max(x)])
+
+  if (class(protos) == "list"){ # more than one representative item in at least one cluster
+    protos <- unlist(lapply(protos, function(X) X[1]))
+  }
   protos
 }
 

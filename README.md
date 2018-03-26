@@ -11,6 +11,8 @@ Mesirov and Golub. Features include the following.
 
 **AstraZeneca** is partially funding this work.
 
+## Updates
+* 2018-03-26. If a cluster had ties in terms of representative items, the representatives function returned a list. The function now arbitrarily returns the first representative item per cluster.
 
 ## References ##
 S. Monti, P. Tamayo, J. Mesirove and T. Golub, _Consensus

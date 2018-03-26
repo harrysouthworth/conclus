@@ -17,7 +17,7 @@ Get representative items from a consensus clustering
 \details{
 The function returns the rownames of the representative items, as
   judged by them having the highest item consensus within their allocated
-  cluster.
+  cluster. If there are ties, the first item is arbitrarily selected.
 }
 \seealso{
 \code{\link{consensus}}, \code{\link{conclus}}, \code{\link{assignClusters}}

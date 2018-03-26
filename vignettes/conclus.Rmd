@@ -164,7 +164,7 @@ which we see bunch of blue squares on the diagonal. Maybe 6, 7 or 8 looks ok, bu
 quite a lot of clusters for a fairly small dataset. Let's get some more help
 
 ```{r pluton_summary}
-sp <- summary(ccp)
+sp <- summary(ccp, plot.it=FALSE)
 sp
 ```
 
@@ -210,7 +210,7 @@ ccpp <- conclus(daisy(pp, "manhattan"), K=10)
 ggplot(ccpp)
 ```
 ```{r pluton_rscale_summary}
-ggplot(summary(ccpp))
+summary(ccpp)
 ```
 
 From the plots above, there's little difference between those and the versions resulting from
@@ -278,7 +278,7 @@ Let's look at the summary measures and compare them with the top row of Figure 3
 original paper.
 
 ```{r Uniform1_summary}
-ggplot(summary(ccu))
+summary(ccu)
 ```
 The CDFs look similar to in Monti et al, as does the plot of &Delta;(k). We show
 the AUC here, which doesn't appear in Monti et al. Let's now create the histogram
@@ -302,7 +302,7 @@ ggplot(ccg, low="white", high="red")
 For k=3, we clearly see the separation of the data into the known 3 groups.
 
 ```{r Gaussian3_summary}
-ggplot(summary(ccg))
+summary(ccg)
 ```
 Again, the plot of &Delta;(k), and of the CDFs, look like those in Monti et al. Notice that
 the CDF for k=3 is a perfect step function. In this case, the algorithm has achieved perfect
@@ -340,9 +340,7 @@ sstjude <- apply(stjude, 2, rscale)
 dj <- daisy(t(sstjude))
 
 ccj <- conclus(dj, K=10, ncores=7)
-s <- summary(ccj)
-s
-ggplot(s)
+summary(ccj)
 ```
 From the output, 6 (or maybe 5 or 7) clusters looks reasonable. So, success!
 
